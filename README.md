@@ -2,6 +2,10 @@
 
 This repository contains tools for processing and utilizing the Fish4Knowledge dataset for computer vision tasks, primarily focused on fish segmentation through image-mask pairs.
 
+## 📸 Demo
+
+![App Demo](demo/demo.gif)
+
 ## Overview
 
 The Fish4Knowledge project provides utilities to:
