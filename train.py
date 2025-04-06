@@ -6,8 +6,8 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 from torch.utils.tensorboard import SummaryWriter
 
-from datasets.fish_dataset import FishSegmentationClassificationDataset
-from models.multitask_model import FishSegmentationClassificationModel
+from datasets.fish_dataset import FishDataset
+from models.multitask_model import FishModel
 from utils.evaluate import validate
 
 from tqdm import tqdm
@@ -28,16 +28,16 @@ transform = transforms.Compose([
     transforms.ToTensor(),
 ])
 
-train_dataset = FishSegmentationClassificationDataset(root_dir="data/train", transform=transform)
-val_dataset = FishSegmentationClassificationDataset(root_dir="data/val", transform=transform)
-test_dataset = FishSegmentationClassificationDataset(root_dir="data/test", transform=transform)
+train_dataset = FishDataset(root_dir="data/train", transform=transform)
+val_dataset = FishDataset(root_dir="data/val", transform=transform)
+test_dataset = FishDataset(root_dir="data/test", transform=transform)
 
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)
 
 # ==== MODEL ====
-model = FishSegmentationClassificationModel(num_classes=23).to(device)
+model = FishModel(num_classes=23).to(device)
 optimizer = optim.Adam(model.parameters(), lr=lr)
 criterion_mask = nn.BCEWithLogitsLoss()
 criterion_class = nn.CrossEntropyLoss()
@@ -85,13 +85,11 @@ for epoch in range(epochs):
 
     print(f"Epoch [{epoch+1}/{epochs}] Val Loss: {val_loss:.4f} IoU: {val_iou:.4f} Dice: {val_dice:.4f}")
 
-    # Save best model
     if val_loss < best_val_loss:
         best_val_loss = val_loss
         torch.save(model.state_dict(), f"{save_dir}/best_model_epoch{epoch+1}.pth")
         print("✅ Best model saved!")
 
-    # Save checkpoint every epoch
     torch.save(model.state_dict(), f"{save_dir}/model_epoch_{epoch+1}.pth")
 
 writer.close()

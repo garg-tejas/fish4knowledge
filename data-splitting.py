@@ -4,13 +4,13 @@ import random
 from tqdm import tqdm
 
 # ==== CONFIGURATION ====
-source_dir = "data/FishDataset"  # your original data location
-output_dir = "data"              # we create train/val/test folders here
+source_dir = "data/FishDataset"
+output_dir = "data"
 train_ratio = 0.7
 val_ratio = 0.2
 test_ratio = 0.1
 
-random.seed(42)  # for reproducibility
+random.seed(42)
 
 # ==== FUNCTIONS ====
 
@@ -25,19 +25,16 @@ def copy_file(src_path, dst_path):
     os.makedirs(os.path.dirname(dst_path), exist_ok=True)
     shutil.copy2(src_path, dst_path)
 
-# Create output split directories
 make_dirs(output_dir, "train")
 make_dirs(output_dir, "val")
 make_dirs(output_dir, "test")
 
-# Verify source directory exists
 if not os.path.exists(source_dir):
     os.makedirs(source_dir, exist_ok=True)
     print(f"Created empty source directory: {source_dir}")
     print("Please place your Fish4Knowledge dataset in this directory and run again.")
     exit(1)
 
-# List all fish folders
 fish_folders = [f for f in os.listdir(source_dir) if f.startswith("fish_")]
 
 if not fish_folders:
@@ -47,18 +44,15 @@ if not fish_folders:
 
 print(f"Found {len(fish_folders)} fish classes")
 
-# Process each fish class
 for fish_folder in tqdm(fish_folders, desc="Processing Fish Folders"):
-    tracking_id = fish_folder.split("_")[1]  # e.g., "1" from "fish_1"
+    tracking_id = fish_folder.split("_")[1]
     fish_path = os.path.join(source_dir, fish_folder)
     mask_path = os.path.join(source_dir, f"mask_{tracking_id}")
     
-    # Check if the mask folder exists
     if not os.path.exists(mask_path):
         print(f"Warning: Missing mask folder for {fish_folder}. Skipping.")
         continue
     
-    # List image and mask files
     try:
         image_files = sorted(os.listdir(fish_path))
         mask_files = sorted(os.listdir(mask_path))
@@ -66,15 +60,14 @@ for fish_folder in tqdm(fish_folders, desc="Processing Fish Folders"):
         print(f"Error reading files from {fish_path} or {mask_path}. Skipping.")
         continue
     
-    # Match image-mask pairs by unique ID
     paired_files = []
     for img_file in image_files:
         if not img_file.endswith('.png'):
             continue
             
-        parts = img_file.split("_", 2)  # split into ['fish', tracking, unique...]
+        parts = img_file.split("_", 2)
         if len(parts) < 3:
-            continue  # skip wrong format
+            continue
             
         tracking = parts[1]
         unique = parts[2].replace(".png", "")
@@ -87,7 +80,6 @@ for fish_folder in tqdm(fish_folders, desc="Processing Fish Folders"):
         print(f"No valid image-mask pairs found for {fish_folder}. Skipping.")
         continue
         
-    # Shuffle and split
     random.shuffle(paired_files)
     total = len(paired_files)
     train_end = int(total * train_ratio)
@@ -103,9 +95,7 @@ for fish_folder in tqdm(fish_folders, desc="Processing Fish Folders"):
         "test": test_pairs
     }
     
-    # Copy files to new folders
     for split_name, pairs in splits.items():
-        # Create folders for this class in this split
         os.makedirs(os.path.join(output_dir, split_name, tracking_id, "images"), exist_ok=True)
         os.makedirs(os.path.join(output_dir, split_name, tracking_id, "masks"), exist_ok=True)
         

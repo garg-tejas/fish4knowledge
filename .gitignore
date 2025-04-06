@@ -3,3 +3,6 @@ __pycache__/
 data/
 
 runs/
+
+checkpoints/*
+!checkpoints/best_model_epoch18.pth
